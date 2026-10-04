@@ -164,21 +164,18 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    next_url = request.args.get("next", "")
+
     if request.method == "POST":
         email = request.form["email"].strip().lower()
         password = request.form["password"]
+        next_url = request.form.get("next", "")
 
         connection = get_db()
-
         user = connection.execute(
-            """
-            SELECT *
-            FROM users
-            WHERE email = ? AND password = ?
-            """,
+            "SELECT * FROM users WHERE email = ? AND password = ?",
             (email, password)
         ).fetchone()
-
         connection.close()
 
         if user:
@@ -186,17 +183,17 @@ def login():
             session["name"] = user["name"]
             session["role"] = user["role"]
 
+            if user["role"] == "student" and next_url.startswith("/scan/"):
+                return redirect(next_url)
+
             if user["role"] == "student":
                 return redirect(url_for("student_dashboard"))
 
             return redirect(url_for("owner_dashboard"))
 
-        return render_template(
-            "login.html",
-            error="Invalid email or password"
-        )
+        return render_template("login.html", error="Invalid email or password", next_url=next_url)
 
-    return render_template("login.html")
+    return render_template("login.html", next_url=next_url)
 
 
 @app.route("/student/dashboard")
