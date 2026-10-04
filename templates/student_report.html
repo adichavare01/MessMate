@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Attendance Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<nav>
+    <h2>MessMate</h2>
+    <a href="{{ url_for('owner_dashboard') }}">Owner Dashboard</a>
+</nav>
+
+<div class="dashboard">
+
+    <h1>Student Attendance Report</h1>
+
+    <div class="dashboard-card">
+
+        <form method="GET"
+              action="{{ url_for('student_report') }}">
+
+            <label>Student ID</label>
+
+            <input
+                type="text"
+                name="student_id"
+                placeholder="Example: MM001"
+                value="{{ student_id }}"
+                required
+            >
+
+            <label>Select Month</label>
+
+            <input
+                type="month"
+                name="month"
+                value="{{ selected_month }}"
+                required
+            >
+
+            <button type="submit">
+                Search
+            </button>
+
+        </form>
+
+    </div>
+
+    {% if student %}
+
+    <div class="dashboard-card">
+
+        <h2>{{ student["name"] }}</h2>
+
+        <p>
+            <strong>Student ID:</strong>
+            {{ student["student_id"] }}
+        </p>
+
+        <p>
+            <strong>Email:</strong>
+            {{ student["email"] }}
+        </p>
+
+        <p>
+            <strong>Month:</strong>
+            {{ selected_month }}
+        </p>
+
+    </div>
+
+    <div class="count-box attendance-summary">
+
+        <div>
+            <strong>Breakfast</strong>
+            <span>{{ breakfast }}</span>
+        </div>
+
+        <div>
+            <strong>Lunch</strong>
+            <span>{{ lunch }}</span>
+        </div>
+
+        <div>
+            <strong>Dinner</strong>
+            <span>{{ dinner }}</span>
+        </div>
+
+        <div>
+            <strong>Total</strong>
+            <span>{{ total }}</span>
+        </div>
+
+    </div>
+
+    <h2>Daily Attendance</h2>
+
+    {% if records %}
+
+    <div class="attendance-table">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Date</th>
+                    <th>Meal</th>
+                    <th>Menu</th>
+                    <th>Status</th>
+                    <th>Scan Time</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for record in records %}
+
+                <tr>
+
+                    <td>{{ record["attendance_date"] }}</td>
+
+                    <td>{{ record["meal_type"] }}</td>
+
+                    <td>{{ record["menu"] }}</td>
+
+                    <td>{{ record["status"] }}</td>
+
+                    <td>{{ record["scan_time"] }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty">
+        No attendance recorded for this student during this month.
+    </div>
+
+    {% endif %}
+
+    {% elif student_id %}
+
+    <div class="empty">
+        No student found with ID {{ student_id }}.
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

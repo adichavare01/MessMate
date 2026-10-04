@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Owner Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h2>MessMate</h2>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</nav>
+
+<div class="dashboard">
+
+    <h1>Welcome, {{ name }}</h1>
+
+    <div class="dashboard-card">
+
+        <h2>Add Meal</h2>
+
+        <form method="POST" action="{{ url_for('add_meal') }}">
+
+            <select name="meal_type" required>
+                <option value="">Select Meal</option>
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+            </select>
+
+            <input
+                type="date"
+                name="meal_date"
+                value="{{ selected_date }}"
+                required
+            >
+
+            <input
+                type="text"
+                name="menu"
+                placeholder="Enter menu"
+                required
+            >
+
+            <label>Meal Start Time</label>
+
+            <input type="time" name="start_time" required>
+
+            <label>Meal End Time</label>
+
+            <input type="time" name="end_time" required>
+
+            <label>Response Deadline</label>
+
+            <input type="time" name="deadline" required>
+
+            <button type="submit">
+                Add Meal
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="dashboard-card date-selector">
+
+        <h2>View Attendance</h2>
+
+        <form method="GET" action="{{ url_for('owner_dashboard') }}">
+
+            <label>Select Date</label>
+
+            <input
+                type="date"
+                name="date"
+                value="{{ selected_date }}"
+                required
+            >
+
+            <button type="submit">
+                View Date
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="dashboard-card">
+
+        <h2>Individual Student Attendance</h2>
+
+        <p>
+            Search a student's monthly attendance using their unique Student ID.
+        </p>
+
+        <a class="qr-button"
+           href="{{ url_for('student_report') }}">
+            Open Student Attendance Report
+        </a>
+
+    </div>
+
+    <h2>
+        Meals for {{ selected_date }}
+    </h2>
+
+    {% if meals %}
+
+    <div class="meal-grid">
+
+        {% for item in meals %}
+
+        <div class="meal-card">
+
+            <h2>{{ item["meal"]["meal_type"] }}</h2>
+
+            <p>
+                <strong>Menu:</strong>
+                {{ item["meal"]["menu"] }}
+            </p>
+
+            <p>
+                <strong>Time:</strong>
+                {{ item["meal"]["start_time"] }}
+                -
+                {{ item["meal"]["end_time"] }}
+            </p>
+
+            <p>
+                <strong>Response Deadline:</strong>
+                {{ item["meal"]["deadline"] }}
+            </p>
+
+            <div class="count-box">
+
+                <div>
+                    <strong>Expected</strong>
+                    <span>{{ item["expected"] }}</span>
+                </div>
+
+                <div>
+                    <strong>Actual</strong>
+                    <span>{{ item["actual"] }}</span>
+                </div>
+
+                <div>
+                    <strong>Difference</strong>
+                    <span>{{ item["difference"] }}</span>
+                </div>
+
+            </div>
+
+            <a class="qr-button"
+               href="{{ url_for('generate_qr', meal_id=item['meal']['id']) }}">
+                Generate QR
+            </a>
+
+            <h3>Present Students</h3>
+
+            {% if item["students"] %}
+
+            <div class="student-list">
+
+                {% for student in item["students"] %}
+
+                <div class="student-row">
+
+                    <strong>
+                        {{ student["name"] }}
+                        {% if student["student_id"] %}
+                        ({{ student["student_id"] }})
+                        {% endif %}
+                    </strong>
+
+                    <span>
+                        {{ student["scan_time"] }}
+                    </span>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <p>No students marked present.</p>
+
+            {% endif %}
+
+            <form
+                method="POST"
+                action="{{ url_for('delete_meal', meal_id=item['meal']['id']) }}"
+            >
+
+                <button type="submit" class="delete">
+                    Delete Meal
+                </button>
+
+            </form>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty">
+        No meals found for {{ selected_date }}.
+    </div>
+
+    {% endif %}
+
+    <h2 class="section-title">
+        Monthly Attendance Records
+    </h2>
+
+    {% if monthly_records %}
+
+    <div class="attendance-table">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Date</th>
+                    <th>Student</th>
+                    <th>Student ID</th>
+                    <th>Email</th>
+                    <th>Meal</th>
+                    <th>Menu</th>
+                    <th>Status</th>
+                    <th>Scan Time</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for record in monthly_records %}
+
+                <tr>
+
+                    <td>{{ record["attendance_date"] }}</td>
+
+                    <td>{{ record["name"] }}</td>
+
+                    <td>{{ record["student_id"] }}</td>
+
+                    <td>{{ record["email"] }}</td>
+
+                    <td>{{ record["meal_type"] }}</td>
+
+                    <td>{{ record["menu"] }}</td>
+
+                    <td>{{ record["status"] }}</td>
+
+                    <td>{{ record["scan_time"] }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty">
+        No attendance records available for this month.
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

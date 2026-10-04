@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meal QR Code</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h2>MessMate</h2>
+    <a href="{{ url_for('owner_dashboard') }}">Owner Dashboard</a>
+</nav>
+
+<div class="container">
+
+    <div class="card">
+
+        <h1>{{ meal["meal_type"] }} QR Code</h1>
+
+        <p>{{ meal["menu"] }}</p>
+
+        <img class="qr-image"
+             src="{{ url_for('static', filename='qrcodes/meal_' ~ meal['id'] ~ '.png') }}">
+
+        <p>Students can scan this QR code during the meal time.</p>
+        <p>{{ qr_url }}</p>
+
+    </div>
+
+</div>
+
+</body>
+</html>

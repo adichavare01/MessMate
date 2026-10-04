@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h2>MessMate</h2>
+    <a href="{{ url_for('logout') }}">Logout</a>
+</nav>
+
+<div class="dashboard">
+
+    <h1>Welcome, {{ name }}</h1>
+
+    <div class="student-id-box">
+        Student ID: <strong>{{ student_id }}</strong>
+    </div>
+
+    <h2>Today's Meals</h2>
+
+    {% if meals %}
+
+    <div class="meal-grid">
+
+        {% for meal in meals %}
+
+        <div class="meal-card">
+
+            <h2>{{ meal["meal_type"] }}</h2>
+
+            <p>
+                <strong>Menu:</strong>
+                {{ meal["menu"] }}
+            </p>
+
+            <p>
+                <strong>Time:</strong>
+                {{ meal["start_time"] }}
+                -
+                {{ meal["end_time"] }}
+            </p>
+
+            <p>
+                <strong>Response Deadline:</strong>
+                {{ meal["deadline"] }}
+            </p>
+
+            {% if response_map.get(meal["id"]) == "Eating" %}
+
+            <div class="status eating">
+                Eating
+            </div>
+
+            {% elif response_map.get(meal["id"]) == "Not Eating" %}
+
+            <div class="status not-eating">
+                Not Eating
+            </div>
+
+            {% else %}
+
+            <div class="response-buttons">
+
+                <form method="POST"
+                      action="{{ url_for('meal_response', meal_id=meal['id']) }}">
+
+                    <input type="hidden" name="response" value="Eating">
+
+                    <button type="submit">
+                        Eating
+                    </button>
+
+                </form>
+
+                <form method="POST"
+                      action="{{ url_for('meal_response', meal_id=meal['id']) }}">
+
+                    <input type="hidden" name="response" value="Not Eating">
+
+                    <button type="submit" class="secondary">
+                        Not Eating
+                    </button>
+
+                </form>
+
+            </div>
+
+            {% endif %}
+
+            {% if attendance_map.get(meal["id"]) == "Present" %}
+
+            <div class="status eating">
+                Actual Attendance: Present
+            </div>
+
+            {% else %}
+
+            <p class="scan-message">
+                Scan the meal QR code at the mess to record actual attendance.
+            </p>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty">
+        No meals have been added for today.
+    </div>
+
+    {% endif %}
+
+    <h2 class="section-title">
+        My Attendance History
+    </h2>
+
+    {% if attendance_history %}
+
+    <div class="attendance-table">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Date</th>
+                    <th>Meal</th>
+                    <th>Menu</th>
+                    <th>Status</th>
+                    <th>Scan Time</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for record in attendance_history %}
+
+                <tr>
+
+                    <td>{{ record["attendance_date"] }}</td>
+
+                    <td>{{ record["meal_type"] }}</td>
+
+                    <td>{{ record["menu"] }}</td>
+
+                    <td>{{ record["status"] }}</td>
+
+                    <td>{{ record["scan_time"] }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="empty">
+        No attendance records available yet.
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

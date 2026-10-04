@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MessMate Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>MessMate</h1>
+            <p>Mess Management System</p>
+
+            <h2>Login</h2>
+
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST">
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+
+            <p>Don't have an account?</p>
+            <a href="{{ url_for('register') }}">Create Account</a>
+        </div>
+    </div>
+</body>
+</html>

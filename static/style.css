@@ -1,0 +1,321 @@
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f4f7fb;
+    color: #222;
+}
+
+.container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    width: 400px;
+    background: white;
+    padding: 35px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.card h1 {
+    margin-bottom: 5px;
+}
+
+.card p {
+    color: #666;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+input, select {
+    padding: 13px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+button {
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+button.secondary {
+    background: #64748b;
+}
+
+button.delete {
+    background: #dc2626;
+}
+
+a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.error {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+nav {
+    background: #2563eb;
+    color: white;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav a {
+    color: white;
+}
+
+.dashboard {
+    padding: 40px;
+    max-width: 1100px;
+    margin: auto;
+}
+
+.grid,
+.meal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.dashboard-card,
+.meal-card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.dashboard-card h2,
+.meal-card h2 {
+    margin-top: 0;
+}
+
+.meal-card form {
+    margin-top: 15px;
+}
+
+.response-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.response-buttons form {
+    flex: 1;
+    margin: 0;
+}
+
+.response-buttons button {
+    width: 100%;
+}
+
+.status {
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.eating {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.not-eating {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.empty {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.count-box {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.count-box div {
+    flex: 1;
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.count-box strong,
+.count-box span {
+    display: block;
+}
+
+.count-box span {
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.qr-button {
+    display: block;
+    text-align: center;
+    padding: 13px;
+    background: #16a34a;
+    color: white;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.qr-image {
+    width: 280px;
+    height: 280px;
+    margin: 20px auto;
+    display: block;
+}
+
+.scan-message {
+    background: #f1f5f9;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.section-title {
+    margin-top: 50px;
+}
+
+.attendance-table {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.attendance-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.attendance-table th,
+.attendance-table td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.attendance-table th {
+    background: #f1f5f9;
+}
+
+.date-selector {
+    margin-top: 25px;
+}
+
+.student-list {
+    margin-top: 15px;
+}
+
+.student-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.student-id-box {
+    display: inline-block;
+    background: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin: 10px 0 25px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.attendance-summary {
+    margin-top: 25px;
+    margin-bottom: 30px;
+}
+
+.attendance-summary div {
+    min-width: 120px;
+}
+
+.attendance-summary span {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: 20px;
+    }
+
+    .grid,
+    .meal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    nav {
+        padding: 15px 20px;
+    }
+
+    .card {
+        width: 90%;
+    }
+
+    .count-box {
+        flex-direction: column;
+    }
+
+    .response-buttons {
+        flex-direction: column;
+    }
+
+    .student-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .attendance-table {
+        overflow-x: auto;
+    }
+}

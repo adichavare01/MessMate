@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        {% if success %}
+
+        <h1>Attendance Recorded</h1>
+
+        <div class="status eating">
+            {{ message }}
+        </div>
+
+        {% else %}
+
+        <h1>Attendance Failed</h1>
+
+        <div class="status not-eating">
+            {{ message }}
+        </div>
+
+        {% endif %}
+
+        <br>
+
+        <a href="{{ url_for('student_dashboard') }}">
+            Back to Student Dashboard
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

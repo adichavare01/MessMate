@@ -1,0 +1,7 @@
+messmate.db
+__pycache__/
+*.pyc
+static/qrcodes/
+.venv/
+venv/
+.env
