@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
-from datetime import datetime, date
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import qrcode
 import os
 import uuid
@@ -8,11 +9,22 @@ import uuid
 app = Flask(__name__)
 app.secret_key = "messmate_secret_key"
 DATABASE = "messmate.db"
+IST = ZoneInfo("Asia/Kolkata")
+
 
 def get_db():
     connection = sqlite3.connect(DATABASE)
     connection.row_factory = sqlite3.Row
     return connection
+
+
+def now_ist():
+    return datetime.now(IST)
+
+
+def today_ist():
+    return now_ist().date().isoformat()
+
 
 def init_db():
     connection = get_db()
@@ -89,6 +101,7 @@ def init_db():
     connection.commit()
     connection.close()
 
+
 @app.route("/")
 def home():
     if "user_id" in session:
@@ -97,7 +110,9 @@ def home():
         if session.get("role") == "owner":
             return redirect(url_for("owner_dashboard"))
         session.clear()
+
     return render_template("login.html")
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -143,26 +158,31 @@ def register():
                     "UPDATE users SET student_id = ? WHERE id = ?",
                     (student_id, new_user["id"])
                 )
+
                 connection.commit()
 
             connection.close()
+
             return redirect(url_for("login"))
 
         except sqlite3.IntegrityError:
             connection.close()
-            return render_template("register.html", error="Email already registered")
+            return render_template(
+                "register.html",
+                error="Email already registered"
+            )
 
     return render_template("register.html")
 
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    next_url = request.args.get("next", "")
-
     if request.method == "POST":
         email = request.form["email"].strip().lower()
         password = request.form["password"]
 
         connection = get_db()
+
         user = connection.execute(
             "SELECT * FROM users WHERE email = ? AND password = ?",
             (email, password)
@@ -171,11 +191,14 @@ def login():
         if user and user["role"] == "student":
             if not user["student_id"]:
                 student_id = f"MM{user['id']:03d}"
+
                 connection.execute(
                     "UPDATE users SET student_id = ? WHERE id = ?",
                     (student_id, user["id"])
                 )
+
                 connection.commit()
+
                 user = connection.execute(
                     "SELECT * FROM users WHERE id = ?",
                     (user["id"],)
@@ -189,6 +212,7 @@ def login():
             session["role"] = user["role"]
 
             scan_next = session.pop("scan_next", "")
+
             if user["role"] == "student" and scan_next.startswith("/scan/"):
                 return redirect(scan_next)
 
@@ -197,9 +221,13 @@ def login():
 
             return redirect(url_for("owner_dashboard"))
 
-        return render_template("login.html", error="Invalid email or password")
+        return render_template(
+            "login.html",
+            error="Invalid email or password"
+        )
 
     return render_template("login.html")
+
 
 @app.route("/student/dashboard")
 def student_dashboard():
@@ -224,17 +252,24 @@ def student_dashboard():
 
     if not student["student_id"]:
         student_id = f"MM{student['id']:03d}"
+
         connection.execute(
             "UPDATE users SET student_id = ? WHERE id = ?",
             (student_id, student["id"])
         )
+
         connection.commit()
+
         student = connection.execute(
-            "SELECT id, name, email, role, student_id FROM users WHERE id = ?",
+            """
+            SELECT id, name, email, role, student_id
+            FROM users
+            WHERE id = ?
+            """,
             (student["id"],)
         ).fetchone()
 
-    today = date.today().isoformat()
+    today = today_ist()
 
     meals = connection.execute(
         """
@@ -273,15 +308,23 @@ def student_dashboard():
             meals.meal_type,
             meals.menu
         FROM attendance
-        JOIN meals ON attendance.meal_id = meals.id
+        JOIN meals
+            ON attendance.meal_id = meals.id
         WHERE attendance.user_id = ?
         ORDER BY attendance.attendance_date DESC, attendance.id DESC
         """,
         (student["id"],)
     ).fetchall()
 
-    response_map = {row["meal_id"]: row["response"] for row in responses}
-    attendance_map = {row["meal_id"]: row["status"] for row in attendance}
+    response_map = {
+        row["meal_id"]: row["response"]
+        for row in responses
+    }
+
+    attendance_map = {
+        row["meal_id"]: row["status"]
+        for row in attendance
+    }
 
     connection.close()
 
@@ -296,12 +339,14 @@ def student_dashboard():
         today=today
     )
 
+
 @app.route("/student/meal-response/<int:meal_id>", methods=["POST"])
 def meal_response(meal_id):
     if "user_id" not in session or session.get("role") != "student":
         return redirect(url_for("login"))
 
     response = request.form["response"]
+
     connection = get_db()
 
     meal = connection.execute(
@@ -313,7 +358,7 @@ def meal_response(meal_id):
         connection.close()
         return redirect(url_for("student_dashboard"))
 
-    current_time = datetime.now().strftime("%H:%M")
+    current_time = now_ist().strftime("%H:%M")
 
     if current_time > meal["deadline"]:
         connection.close()
@@ -335,7 +380,11 @@ def meal_response(meal_id):
             SET response = ?, created_at = ?
             WHERE id = ?
             """,
-            (response, datetime.now().isoformat(), existing["id"])
+            (
+                response,
+                now_ist().isoformat(),
+                existing["id"]
+            )
         )
     else:
         connection.execute(
@@ -348,7 +397,7 @@ def meal_response(meal_id):
                 session["user_id"],
                 meal_id,
                 response,
-                datetime.now().isoformat()
+                now_ist().isoformat()
             )
         )
 
@@ -357,6 +406,7 @@ def meal_response(meal_id):
 
     return redirect(url_for("student_dashboard"))
 
+
 @app.route("/owner/dashboard")
 def owner_dashboard():
     if "user_id" not in session or session.get("role") != "owner":
@@ -364,7 +414,7 @@ def owner_dashboard():
 
     selected_date = request.args.get(
         "date",
-        date.today().isoformat()
+        today_ist()
     )
 
     connection = get_db()
@@ -457,24 +507,30 @@ def owner_dashboard():
         "owner_dashboard.html",
         name=session["name"],
         meals=meal_data,
-        today=date.today().isoformat(),
+        today=today_ist(),
         selected_date=selected_date,
         monthly_records=monthly_records
     )
+
 
 @app.route("/owner/student-report")
 def student_report():
     if "user_id" not in session or session.get("role") != "owner":
         return redirect(url_for("login"))
 
-    student_id = request.args.get("student_id", "").strip().upper()
+    student_id = request.args.get(
+        "student_id",
+        ""
+    ).strip().upper()
+
     selected_month = request.args.get(
         "month",
-        date.today().strftime("%Y-%m")
+        now_ist().strftime("%Y-%m")
     )
 
     student = None
     records = []
+
     breakfast = 0
     lunch = 0
     dinner = 0
@@ -512,7 +568,10 @@ def student_report():
                 AND strftime('%Y-%m', attendance.attendance_date) = ?
                 ORDER BY attendance.attendance_date, meals.id
                 """,
-                (student["id"], selected_month)
+                (
+                    student["id"],
+                    selected_month
+                )
             ).fetchall()
 
             for record in records:
@@ -539,6 +598,7 @@ def student_report():
         dinner=dinner,
         total=total
     )
+
 
 @app.route("/owner/add-meal", methods=["POST"])
 def add_meal():
@@ -580,6 +640,7 @@ def add_meal():
         )
     )
 
+
 @app.route("/owner/delete-meal/<int:meal_id>", methods=["POST"])
 def delete_meal(meal_id):
     if "user_id" not in session or session.get("role") != "owner":
@@ -620,6 +681,7 @@ def delete_meal(meal_id):
 
     return redirect(url_for("owner_dashboard"))
 
+
 @app.route("/owner/generate-qr/<int:meal_id>")
 def generate_qr(meal_id):
     if "user_id" not in session or session.get("role") != "owner":
@@ -644,7 +706,10 @@ def generate_qr(meal_id):
         (setting_name, setting_value)
         VALUES (?, ?)
         """,
-        (f"qr_{meal_id}", token)
+        (
+            f"qr_{meal_id}",
+            token
+        )
     )
 
     connection.commit()
@@ -659,9 +724,13 @@ def generate_qr(meal_id):
 
     qr = qrcode.make(qr_url)
 
-    os.makedirs("static/qrcodes", exist_ok=True)
+    os.makedirs(
+        "static/qrcodes",
+        exist_ok=True
+    )
 
     qr_path = f"static/qrcodes/meal_{meal_id}.png"
+
     qr.save(qr_path)
 
     return render_template(
@@ -670,6 +739,7 @@ def generate_qr(meal_id):
         qr_path=qr_path,
         qr_url=qr_url
     )
+
 
 @app.route("/scan/<int:meal_id>/<token>")
 def scan_attendance(meal_id, token):
@@ -710,26 +780,29 @@ def scan_attendance(meal_id, token):
 
     if not saved_token or not meal or saved_token["setting_value"] != token:
         connection.close()
+
         return render_template(
             "attendance_result.html",
             success=False,
             message="Invalid QR code"
         )
 
-    today = date.today().isoformat()
+    today = today_ist()
 
     if meal["meal_date"] != today:
         connection.close()
+
         return render_template(
             "attendance_result.html",
             success=False,
             message="This QR code is not valid today"
         )
 
-    current_time = datetime.now().strftime("%H:%M")
+    current_time = now_ist().strftime("%H:%M")
 
     if current_time < meal["start_time"] or current_time > meal["end_time"]:
         connection.close()
+
         return render_template(
             "attendance_result.html",
             success=False,
@@ -743,11 +816,15 @@ def scan_attendance(meal_id, token):
         WHERE user_id = ?
         AND meal_id = ?
         """,
-        (student["id"], meal_id)
+        (
+            student["id"],
+            meal_id
+        )
     ).fetchone()
 
     if existing:
         connection.close()
+
         return render_template(
             "attendance_result.html",
             success=False,
@@ -765,7 +842,7 @@ def scan_attendance(meal_id, token):
             meal_id,
             today,
             "Present",
-            datetime.now().strftime("%H:%M:%S")
+            now_ist().strftime("%H:%M:%S")
         )
     )
 
@@ -778,12 +855,15 @@ def scan_attendance(meal_id, token):
         message="Meal attendance recorded successfully"
     )
 
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
 
+
 init_db()
+
 
 if __name__ == "__main__":
     app.run(debug=True)
